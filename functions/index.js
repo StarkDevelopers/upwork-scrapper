@@ -39,23 +39,43 @@ const puppeteerArgs = [
 
 const newOpenJobs = [];
 
+async function waitForIt() {
+  return new Promise(resolve => {
+    setTimeout(resolve, 10000);
+  });
+}
+
 async function startTracking() {
   let browser = null;
+  let page = null;
+  let isLoginSuccessful = false;
+
   try {
-    browser = await puppeteer.launch({
-      headless: false,
-      defaultViewport: {
-        height: 1080 + Math.floor(Math.random() * 100),
-        width: 1920 + Math.floor(Math.random() * 100),
-      },
-      args: puppeteerArgs,
-    });
-    const page = await browser.newPage();
-    await page.setUserAgent(randomUseragent.getRandom());
+    do {
 
-    await page.waitForTimeout(3000);
+      if (browser) {
+        await browser.close();
+        
+        await waitForIt();
+      }
 
-    const isLoginSuccessful = await login(page);
+      browser = await puppeteer.launch({
+        headless: false,
+        defaultViewport: {
+          height: 1080 + Math.floor(Math.random() * 100),
+          width: 1920 + Math.floor(Math.random() * 100),
+        },
+        args: puppeteerArgs,
+      });
+
+      page = await browser.newPage();
+      await page.setUserAgent(randomUseragent.getRandom());
+
+      await page.waitForTimeout(3000);
+
+      isLoginSuccessful = await login(page);
+
+    } while (!isLoginSuccessful);
 
     if (!isLoginSuccessful) {
       throw new Error('Failed to login');
@@ -65,7 +85,7 @@ async function startTracking() {
 
     const jobPostUrls = await checkFreelancersProfile(page);
 
-    await checkJobPosts(browser, page, jobPostUrls);
+    await checkJobPosts(browser, page, jobPostUrls, newOpenJobs);
 
     console.log(`Open Jobs (${newOpenJobs.length}):`, newOpenJobs);
     console.log('Scheduler Completed Job...');
@@ -77,39 +97,44 @@ async function startTracking() {
 }
 
 async function login(page) {
-  await goto(page, 'https://www.upwork.com/ab/account-security/login', 20000);
-
-  await page.waitForTimeout(3000);
-
-  const url = await page.url();
-  const title = await page.title();
-  console.log('On page...', url, title);
-
-  await page.type('#login_username', UPWORK_USERNAME);
-  await page.click('#login_password_continue');
-
-  await page.waitForTimeout(3000);
-  await page.waitFor('#login_control_continue');
-
-  const url1 = await page.url();
-  const title1 = await page.title();
-  console.log('On page...', url1, title1);
-
-  await page.type('#login_password', UPWORK_PASSWORD);
-  await page.click('#login_control_continue');
-
-  console.log('Logging in...');
-  await page.waitForTimeout(10000);
-
-  const currentUrl = await page.url();
-
-  console.log('Url after Login:', currentUrl);
-
-  if (currentUrl.includes('ab/create-profile')) {
-    return true;
+  try {
+    await goto(page, 'https://www.upwork.com/ab/account-security/login', 20000);
+  
+    await page.waitForTimeout(3000);
+  
+    const url = await page.url();
+    const title = await page.title();
+    console.log('On page...', url, title);
+  
+    await page.type('#login_username', UPWORK_USERNAME);
+    await page.click('#login_password_continue');
+  
+    await page.waitForTimeout(3000);
+    await page.waitFor('#login_control_continue');
+  
+    const url1 = await page.url();
+    const title1 = await page.title();
+    console.log('On page...', url1, title1);
+  
+    await page.type('#login_password', UPWORK_PASSWORD);
+    await page.click('#login_control_continue');
+  
+    console.log('Logging in...');
+    await page.waitForTimeout(10000);
+  
+    const currentUrl = await page.url();
+  
+    console.log('Url after Login:', currentUrl);
+  
+    if (currentUrl.includes('ab/create-profile')) {
+      return true;
+    }
+  
+    return false;
+  } catch (err) {
+    console.log(`Failed to login: ${err.message}`);
+    return false;
   }
-
-  return false;
 }
 
 startTracking();

@@ -6,7 +6,7 @@ const JOB_POST_STATUS = {
   OPEN_JOBS_AVAILABLE: 3,
 };
 
-async function checkJobPosts(browser, page, jobPostUrls) {
+async function checkJobPosts(browser, page, jobPostUrls, newOpenJobs) {
   for (const jobPostUrl of jobPostUrls) {
     console.log('Scanning job post:', jobPostUrl);
     await goto(page, `https://www.upwork.com${jobPostUrl}`);
@@ -51,11 +51,11 @@ async function checkJobPosts(browser, page, jobPostUrls) {
 
     console.log('Open Job Urls:', openJobUrls);
 
-    await checkOpenJobs(browser, openJobUrls);
+    await checkOpenJobs(browser, openJobUrls, newOpenJobs);
   }
 }
 
-async function checkOpenJobs(browser, openJobUrls) {
+async function checkOpenJobs(browser, openJobUrls, newOpenJobs) {
   for (const openJobUrl of openJobUrls) {
     let newPage;
     try {
