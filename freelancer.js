@@ -1,4 +1,4 @@
-const { goto } = require('./utils');
+const {goto} = require('./utils');
 
 const FREELANCERS_URLS = JSON.parse(process.env.FREELANCERS_URLS);
 
@@ -9,10 +9,10 @@ async function checkFreelancersProfile(page) {
     try {
       console.log('Scanning freelancer:', freelancerUrl);
       await goto(page, freelancerUrl);
-  
+
       await page.waitForTimeout(4000);
 
-      const { logs, jobPostUrls } = await page.evaluate(async () => {
+      const {logs, jobPostUrls} = await page.evaluate(async () => {
         const logs = [];
         const jobPostUrls = [];
 
@@ -23,8 +23,8 @@ async function checkFreelancersProfile(page) {
         };
 
         async function checkJobsOfFreelancer(isCompletedJobs) {
+          const jobType = isCompletedJobs ? '#completed' : '#in_progress';
           try {
-            const jobType = isCompletedJobs ? '#completed' : '#in_progress';
             const completedJobs = document.querySelector(`.work-history ${jobType}`);
 
             if (completedJobs) {
@@ -86,8 +86,7 @@ async function checkFreelancersProfile(page) {
                   continueCompletedJobs = false;
                   logs.push(`Error while checking next jobs: ${err.message} ${err.stack}`);
                 }
-              } while(continueCompletedJobs);
-
+              } while (continueCompletedJobs);
             } else {
               logs.push(`No ${jobType} Jobs`);
             }
@@ -106,7 +105,7 @@ async function checkFreelancersProfile(page) {
         await checkJobsOfFreelancer(true);
         await checkJobsOfFreelancer(false);
 
-        return { logs, jobPostUrls };
+        return {logs, jobPostUrls};
       });
 
       console.log(logs);

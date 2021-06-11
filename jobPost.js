@@ -1,4 +1,4 @@
-const { unwrapAllOpenJobUrl, goto } = require('./utils');
+const {unwrapAllOpenJobUrl, goto} = require('./utils');
 
 const JOB_POST_STATUS = {
   JOB_DOES_NOT_EXIST: 1,

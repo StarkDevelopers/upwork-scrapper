@@ -23,5 +23,5 @@ async function goto(page, url, timeout = 10000) {
 
 module.exports = {
   unwrapAllOpenJobUrl,
-  goto
+  goto,
 };
